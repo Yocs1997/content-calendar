@@ -11,9 +11,8 @@ const CONTENT_TYPES = ["Single Image", "Carousel", "Reel", "Story", "Video", "Ba
 const STATUSES = ["Copies Written", "Designing", "Needs Approval", "Scheduled", "Published"];
 const ASSIGNEES = ["Yader Calderon", "Massiel Caldera", "Scarleth Orozco"];
 const KNOWN_CLIENTS = [
-  "Tag Express", "Mary Autopartes", "Tecbify", 
-  "Repuestos El Eden", "Huber Rent a Car", "Norte Express", 
-  "Pak It Up", "All American Auto Group LLC", "Pro-DG (Internal)"
+  "Tag Express", "Mary Autopartes", "My Office CoWorking", 
+  "Repuestos El Eden", "Huber Rent a Car", "Rasheila Daniels", "David EST", "Pro-DG (Internal)", "NRT"
 ];
 
 const getStatusColor = (status: string) => {
