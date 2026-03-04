@@ -12,7 +12,7 @@ const STATUSES = ["Copies Written", "Designing", "Needs Approval", "Scheduled", 
 const ASSIGNEES = ["Yader Calderon", "Massiel Caldera", "Scarleth Orozco"];
 const KNOWN_CLIENTS = [
   "Tag Express", "Mary Autopartes", "My Office CoWorking", 
-  "Repuestos El Eden", "Huber Rent a Car", "Rasheila Daniels", "David EST", "Pro-DG (Internal)", "NRT"
+  "Repuestos El Eden", "Huber Rent a Car", "Rasheila Daniels", "David EST", "Pro-DG (Internal)", "NRT", "Frozzzy Pop"
 ];
 
 const getStatusColor = (status: string) => {
