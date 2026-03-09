@@ -12,7 +12,7 @@ const STATUSES      = ["Copies Written", "Designing", "Needs Approval", "Schedul
 const ASSIGNEES     = ["Yader Calderon", "Massiel Caldera", "Scarleth Orozco"];
 const KNOWN_CLIENTS = [
   "Tag Express","Mary Autopartes","My Office CoWorking","Repuestos El Eden",
-  "Huber Rent a Car","Rasheila Daniels","David EST","Pro-DG (Internal)","NRT","Frozzzy Pop",
+  "Huber Rent a Car","Rasheila Daniels","David EST","Pro-DG (Internal)","NRT","Frozzzy Pop","SuperCargo",
 ];
 
 // Platform colored dots (matching reference image: IG=red, FB=blue, etc.)
@@ -48,9 +48,9 @@ const getStatusLight  = (s:string) => {
 };
 
 // Per-client accent colors
-const CLIENT_DOT:Record<string,string>  = { "Tag Express":"bg-orange-500","Mary Autopartes":"bg-blue-400","My Office CoWorking":"bg-teal-400","Repuestos El Eden":"bg-emerald-400","Huber Rent a Car":"bg-yellow-400","Rasheila Daniels":"bg-pink-400","David EST":"bg-slate-400","Pro-DG (Internal)":"bg-indigo-400","NRT":"bg-sky-400","Frozzzy Pop":"bg-cyan-400" };
-const CLIENT_TEXT:Record<string,string> = { "Tag Express":"text-orange-400","Mary Autopartes":"text-blue-300","My Office CoWorking":"text-teal-300","Repuestos El Eden":"text-emerald-400","Huber Rent a Car":"text-yellow-300","Rasheila Daniels":"text-pink-400","David EST":"text-slate-300","Pro-DG (Internal)":"text-indigo-300","NRT":"text-sky-300","Frozzzy Pop":"text-cyan-300" };
-const CLIENT_BORDER:Record<string,string>={ "Tag Express":"border-orange-500","Mary Autopartes":"border-blue-400","My Office CoWorking":"border-teal-400","Repuestos El Eden":"border-emerald-400","Huber Rent a Car":"border-yellow-400","Rasheila Daniels":"border-pink-400","David EST":"border-slate-400","Pro-DG (Internal)":"border-indigo-400","NRT":"border-sky-400","Frozzzy Pop":"border-cyan-400" };
+const CLIENT_DOT:Record<string,string>  = { "Tag Express":"bg-orange-500","Mary Autopartes":"bg-blue-400","My Office CoWorking":"bg-teal-400","Repuestos El Eden":"bg-emerald-400","Huber Rent a Car":"bg-yellow-400","Rasheila Daniels":"bg-pink-400","David EST":"bg-slate-400","Pro-DG (Internal)":"bg-indigo-400","NRT":"bg-sky-400","Frozzzy Pop":"bg-cyan-400","SuperCargo":"bg-red-500" };
+const CLIENT_TEXT:Record<string,string> = { "Tag Express":"text-orange-400","Mary Autopartes":"text-blue-300","My Office CoWorking":"text-teal-300","Repuestos El Eden":"text-emerald-400","Huber Rent a Car":"text-yellow-300","Rasheila Daniels":"text-pink-400","David EST":"text-slate-300","Pro-DG (Internal)":"text-indigo-300","NRT":"text-sky-300","Frozzzy Pop":"text-cyan-300","SuperCargo":"text-red-400" };
+const CLIENT_BORDER:Record<string,string>={ "Tag Express":"border-orange-500","Mary Autopartes":"border-blue-400","My Office CoWorking":"border-teal-400","Repuestos El Eden":"border-emerald-400","Huber Rent a Car":"border-yellow-400","Rasheila Daniels":"border-pink-400","David EST":"border-slate-400","Pro-DG (Internal)":"border-indigo-400","NRT":"border-sky-400","Frozzzy Pop":"border-cyan-400","SuperCargo":"border-red-500" };
 
 const formatDateForInput = (d:Date) =>
   `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,"0")}-${d.getDate().toString().padStart(2,"0")}`;
