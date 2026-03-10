@@ -10,12 +10,31 @@ const PLATFORMS     = ["Instagram", "Facebook", "TikTok", "LinkedIn", "X (Twitte
 const CONTENT_TYPES = ["Single Image", "Carousel", "Reel", "Story", "Video", "Batch/Bundle"];
 const STATUSES      = ["Copies Written", "Designing", "Needs Approval", "Scheduled", "Published"];
 const ASSIGNEES     = ["Yader Calderon", "Massiel Caldera", "Scarleth Orozco"];
-const KNOWN_CLIENTS = [
+const BASE_CLIENTS  = [
   "Tag Express","Mary Autopartes","My Office CoWorking","Repuestos El Eden",
   "Huber Rent a Car","Rasheila Daniels","David EST","Pro-DG (Internal)","NRT","Frozzzy Pop","SuperCargo",
 ];
 
-// Platform colored dots (matching reference image: IG=red, FB=blue, etc.)
+// Available accent colors for new clients
+const COLOR_OPTIONS = [
+  { label:"Red",    dot:"bg-red-500",    text:"text-red-400",    border:"border-red-500" },
+  { label:"Orange", dot:"bg-orange-500", text:"text-orange-400", border:"border-orange-500" },
+  { label:"Amber",  dot:"bg-amber-400",  text:"text-amber-300",  border:"border-amber-400" },
+  { label:"Yellow", dot:"bg-yellow-400", text:"text-yellow-300", border:"border-yellow-400" },
+  { label:"Lime",   dot:"bg-lime-400",   text:"text-lime-300",   border:"border-lime-400" },
+  { label:"Green",  dot:"bg-emerald-400",text:"text-emerald-400",border:"border-emerald-400" },
+  { label:"Teal",   dot:"bg-teal-400",   text:"text-teal-300",   border:"border-teal-400" },
+  { label:"Cyan",   dot:"bg-cyan-400",   text:"text-cyan-300",   border:"border-cyan-400" },
+  { label:"Sky",    dot:"bg-sky-400",    text:"text-sky-300",    border:"border-sky-400" },
+  { label:"Blue",   dot:"bg-blue-400",   text:"text-blue-300",   border:"border-blue-400" },
+  { label:"Indigo", dot:"bg-indigo-400", text:"text-indigo-300", border:"border-indigo-400" },
+  { label:"Purple", dot:"bg-purple-400", text:"text-purple-300", border:"border-purple-400" },
+  { label:"Pink",   dot:"bg-pink-400",   text:"text-pink-400",   border:"border-pink-400" },
+  { label:"Rose",   dot:"bg-rose-400",   text:"text-rose-400",   border:"border-rose-400" },
+  { label:"Slate",  dot:"bg-slate-400",  text:"text-slate-300",  border:"border-slate-400" },
+];
+
+// Platform colored dots
 const PLATFORM_DOT: Record<string,string> = {
   "Instagram":   "bg-rose-500",
   "Facebook":    "bg-sky-500",
@@ -47,19 +66,83 @@ const getStatusLight  = (s:string) => {
   }
 };
 
-// Per-client accent colors
-const CLIENT_DOT:Record<string,string>  = { "Tag Express":"bg-orange-500","Mary Autopartes":"bg-blue-400","My Office CoWorking":"bg-teal-400","Repuestos El Eden":"bg-emerald-400","Huber Rent a Car":"bg-yellow-400","Rasheila Daniels":"bg-pink-400","David EST":"bg-slate-400","Pro-DG (Internal)":"bg-indigo-400","NRT":"bg-sky-400","Frozzzy Pop":"bg-cyan-400","SuperCargo":"bg-red-500" };
-const CLIENT_TEXT:Record<string,string> = { "Tag Express":"text-orange-400","Mary Autopartes":"text-blue-300","My Office CoWorking":"text-teal-300","Repuestos El Eden":"text-emerald-400","Huber Rent a Car":"text-yellow-300","Rasheila Daniels":"text-pink-400","David EST":"text-slate-300","Pro-DG (Internal)":"text-indigo-300","NRT":"text-sky-300","Frozzzy Pop":"text-cyan-300","SuperCargo":"text-red-400" };
-const CLIENT_BORDER:Record<string,string>={ "Tag Express":"border-orange-500","Mary Autopartes":"border-blue-400","My Office CoWorking":"border-teal-400","Repuestos El Eden":"border-emerald-400","Huber Rent a Car":"border-yellow-400","Rasheila Daniels":"border-pink-400","David EST":"border-slate-400","Pro-DG (Internal)":"border-indigo-400","NRT":"border-sky-400","Frozzzy Pop":"border-cyan-400","SuperCargo":"border-red-500" };
+// Base client accent colors (hardcoded)
+const BASE_CLIENT_DOT:Record<string,string>    = { "Tag Express":"bg-orange-500","Mary Autopartes":"bg-blue-400","My Office CoWorking":"bg-teal-400","Repuestos El Eden":"bg-emerald-400","Huber Rent a Car":"bg-yellow-400","Rasheila Daniels":"bg-pink-400","David EST":"bg-slate-400","Pro-DG (Internal)":"bg-indigo-400","NRT":"bg-sky-400","Frozzzy Pop":"bg-cyan-400","SuperCargo":"bg-red-500" };
+const BASE_CLIENT_TEXT:Record<string,string>   = { "Tag Express":"text-orange-400","Mary Autopartes":"text-blue-300","My Office CoWorking":"text-teal-300","Repuestos El Eden":"text-emerald-400","Huber Rent a Car":"text-yellow-300","Rasheila Daniels":"text-pink-400","David EST":"text-slate-300","Pro-DG (Internal)":"text-indigo-300","NRT":"text-sky-300","Frozzzy Pop":"text-cyan-300","SuperCargo":"text-red-400" };
+const BASE_CLIENT_BORDER:Record<string,string> = { "Tag Express":"border-orange-500","Mary Autopartes":"border-blue-400","My Office CoWorking":"border-teal-400","Repuestos El Eden":"border-emerald-400","Huber Rent a Car":"border-yellow-400","Rasheila Daniels":"border-pink-400","David EST":"border-slate-400","Pro-DG (Internal)":"border-indigo-400","NRT":"border-sky-400","Frozzzy Pop":"border-cyan-400","SuperCargo":"border-red-500" };
 
 const formatDateForInput = (d:Date) =>
   `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,"0")}-${d.getDate().toString().padStart(2,"0")}`;
 
+// ─── ADD CLIENT MODAL ─────────────────────────────────────────────────────────
+function AddClientModal({ isOpen, onClose, onAdd }:{ isOpen:boolean; onClose:()=>void; onAdd:(name:string, colorIdx:number)=>void; }) {
+  const [name, setName]         = useState("");
+  const [colorIdx, setColorIdx] = useState(0);
+  if (!isOpen) return null;
+  const preview = COLOR_OPTIONS[colorIdx];
+  const handleSubmit = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onAdd(trimmed, colorIdx);
+    setName("");
+    setColorIdx(0);
+  };
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div className="bg-[#0d1117] px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-sm font-black uppercase tracking-widest text-white">+ Add New Client</h2>
+          <button onClick={onClose} className="cursor-pointer text-white/30 hover:text-white transition-colors text-lg leading-none">✕</button>
+        </div>
+        <div className="p-5 space-y-5">
+          <div>
+            <label className="block text-[10px] font-black text-white/30 uppercase tracking-widest mb-2">Client Name</label>
+            <input
+              autoFocus
+              type="text"
+              value={name}
+              onChange={e=>setName(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter") handleSubmit(); }}
+              placeholder="e.g. Acme Corp"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white font-bold text-sm outline-none focus:border-white/30 placeholder:text-white/20 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-white/30 uppercase tracking-widest mb-2">Accent Color</label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_OPTIONS.map((c,i)=>(
+                <button key={i} type="button" onClick={()=>setColorIdx(i)}
+                  title={c.label}
+                  className={`cursor-pointer w-7 h-7 rounded-full ${c.dot} transition-all ${colorIdx===i?"ring-2 ring-white ring-offset-2 ring-offset-[#111827] scale-110":"opacity-60 hover:opacity-100"}`}/>
+              ))}
+            </div>
+          </div>
+          {name.trim() && (
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${preview.border} bg-white/3`}>
+              <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${preview.dot}`}></span>
+              <span className={`font-black text-sm ${preview.text}`}>{name.trim()}</span>
+              <span className="text-white/20 text-xs ml-auto">preview</span>
+            </div>
+          )}
+        </div>
+        <div className="px-5 py-4 border-t border-white/8 flex justify-end gap-3">
+          <button onClick={onClose} className="cursor-pointer px-4 py-2 text-white/40 font-bold hover:text-white transition-colors text-sm">Cancel</button>
+          <button onClick={handleSubmit} disabled={!name.trim()}
+            className="cursor-pointer px-5 py-2 bg-white text-[#0d1117] font-black rounded-xl hover:bg-slate-100 transition-all active:scale-95 text-sm disabled:opacity-30 disabled:cursor-not-allowed">
+            Add Client
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── POST MODAL ───────────────────────────────────────────────────────────────
-function PostModal({ isOpen,editId,formData,setFormData,isUploading,onSave,onDelete,onClose,onFileUpload,lockedClient }:{
+function PostModal({ isOpen,editId,formData,setFormData,isUploading,onSave,onDelete,onClose,onFileUpload,lockedClient,allClients,clientDot,onAddClientClick }:{
   isOpen:boolean;editId:string|null;formData:any;setFormData:(d:any)=>void;isUploading:boolean;
   onSave:(e:React.FormEvent)=>void;onDelete:()=>void;onClose:()=>void;
   onFileUpload:(e:React.ChangeEvent<HTMLInputElement>)=>void;lockedClient?:string;
+  allClients:string[];clientDot:(name:string)=>string;onAddClientClick:()=>void;
 }) {
   if (!isOpen) return null;
   return (
@@ -72,20 +155,25 @@ function PostModal({ isOpen,editId,formData,setFormData,isUploading,onSave,onDel
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-y-auto min-h-0">
-          {/* LEFT */}
           <div className="flex-1 p-4 sm:p-5 border-r border-slate-200 bg-slate-50 space-y-4">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Client</label>
               {lockedClient ? (
                 <div className="w-full border-2 border-slate-200 rounded-xl p-2.5 font-bold text-slate-800 bg-white flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${CLIENT_DOT[lockedClient]||"bg-slate-400"}`}></span>{lockedClient}
+                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${clientDot(lockedClient)}`}></span>{lockedClient}
                 </div>
               ) : (
-                <select value={formData.client_name} onChange={e=>setFormData({...formData,client_name:e.target.value})}
-                  className="w-full border-2 border-slate-200 rounded-xl p-2.5 outline-none focus:border-indigo-400 font-bold text-slate-800 bg-white">
-                  {KNOWN_CLIENTS.map(c=><option key={c} value={c}>{c}</option>)}
-                  <option value="Other">Other</option>
-                </select>
+                <div className="flex gap-2">
+                  <select value={formData.client_name} onChange={e=>setFormData({...formData,client_name:e.target.value})}
+                    className="flex-1 border-2 border-slate-200 rounded-xl p-2.5 outline-none focus:border-indigo-400 font-bold text-slate-800 bg-white">
+                    {allClients.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <button type="button" onClick={onAddClientClick}
+                    title="Add new client"
+                    className="cursor-pointer flex-shrink-0 w-10 h-10 mt-0.5 flex items-center justify-center rounded-xl bg-[#0d1117] text-white font-black text-lg hover:bg-slate-800 transition-all">
+                    +
+                  </button>
+                </div>
               )}
             </div>
 
@@ -160,7 +248,6 @@ function PostModal({ isOpen,editId,formData,setFormData,isUploading,onSave,onDel
             </div>
           </div>
 
-          {/* RIGHT */}
           <div className="flex-1 p-4 sm:p-5 bg-white space-y-4 flex flex-col">
             <div className="flex-1 flex flex-col">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Caption / Copy</label>
@@ -201,7 +288,11 @@ function PostModal({ isOpen,editId,formData,setFormData,isUploading,onSave,onDel
 }
 
 // ─── CLIENT CALENDAR OVERLAY ──────────────────────────────────────────────────
-function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; onClose:()=>void; onRefresh:()=>void; }) {
+function ClientCalendarOverlay({ client, onClose, onRefresh, clientDot, clientText, clientBorder, allClients, onAddClient }:{
+  client:string; onClose:()=>void; onRefresh:()=>void;
+  clientDot:(n:string)=>string; clientText:(n:string)=>string; clientBorder:(n:string)=>string;
+  allClients:string[]; onAddClient:(name:string,colorIdx:number)=>void;
+}) {
   const [calDate,setCalDate]   = useState(new Date());
   const [posts,setPosts]       = useState<any[]>([]);
   const [loading,setLoading]   = useState(true);
@@ -209,6 +300,7 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
   const [isUploading,setIsUploading] = useState(false);
   const [editId,setEditId]     = useState<string|null>(null);
   const [rt,setRt]             = useState(0);
+  const [isAddClientOpen,setIsAddClientOpen] = useState(false);
 
   const defaultForm = useCallback((date:Date=new Date())=>({
     client_name:client, publish_date:formatDateForInput(date), publish_time:"12:00",
@@ -268,19 +360,22 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
     if(!error){const{data}=supabase.storage.from("agency_assets").getPublicUrl(path);setFormData((p:any)=>({...p,media_urls:[...p.media_urls,data.publicUrl]}))}
     else alert("Upload failed."); setIsUploading(false); };
 
-  const accentBorder = CLIENT_BORDER[client]||"border-slate-600";
-  const accentText   = CLIENT_TEXT[client]||"text-white";
-  const accentDot    = CLIENT_DOT[client]||"bg-slate-400";
+  const handleAddClientHere=(name:string,colorIdx:number)=>{
+    onAddClient(name,colorIdx);
+    setIsAddClientOpen(false);
+  };
+
+  const accentBorder = clientBorder(client);
+  const accentText   = clientText(client);
+  const accentDot    = clientDot(client);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0d1117] flex flex-col overflow-hidden">
+      <AddClientModal isOpen={isAddClientOpen} onClose={()=>setIsAddClientOpen(false)} onAdd={handleAddClientHere}/>
 
-      {/* HEADER */}
       <div className={`bg-[#111827] border-b-2 ${accentBorder} flex-shrink-0`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-
-            {/* Back + name */}
             <div className="flex items-center gap-3">
               <button onClick={onClose}
                 className="cursor-pointer flex items-center gap-2 bg-white/8 hover:bg-white/15 text-white/80 hover:text-white font-bold px-3 sm:px-4 py-2 rounded-xl transition-all border border-white/10 text-sm">
@@ -294,8 +389,6 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
                 </div>
               </div>
             </div>
-
-            {/* Stats */}
             <div className="flex items-center gap-2 flex-wrap">
               {[{l:"Total",v:total,c:"text-white border-white/15 bg-white/5"},{l:"Published",v:pub,c:"text-emerald-400 border-emerald-500/30 bg-emerald-500/8"},{l:"Scheduled",v:sched,c:"text-sky-400 border-sky-500/30 bg-sky-500/8"},{l:"Approval",v:appr,c:"text-amber-400 border-amber-500/30 bg-amber-500/8"}].map(s=>(
                 <div key={s.l} className={`border rounded-xl px-3 py-2 text-center min-w-[56px] ${s.c}`}>
@@ -304,8 +397,6 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
                 </div>
               ))}
             </div>
-
-            {/* Nav + New */}
             <div className="flex items-center gap-2">
               <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1">
                 <button onClick={()=>setCalDate(new Date(yr,mo-1,1))} className="cursor-pointer px-2 sm:px-3 py-1.5 hover:bg-white/10 rounded-lg font-bold text-white transition-all text-sm">←</button>
@@ -323,7 +414,6 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
         </div>
       </div>
 
-      {/* GRID */}
       <div className="flex-1 overflow-auto p-2 sm:p-4">
         <div className="max-w-7xl mx-auto">
           <div className="rounded-xl overflow-hidden border border-white/8 shadow-2xl">
@@ -384,8 +474,6 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
               </div>
             </div>
           </div>
-
-          {/* Legend */}
           <div className="mt-3 flex flex-wrap gap-3 justify-center items-center">
             {STATUSES.map(st=>{ const ss=getStatusStyle(st); return (
               <div key={st} className="flex items-center gap-1.5">
@@ -406,7 +494,8 @@ function ClientCalendarOverlay({ client, onClose, onRefresh }:{ client:string; o
 
       <PostModal isOpen={isModalOpen} editId={editId} formData={formData} setFormData={setFormData}
         isUploading={isUploading} onSave={handleSave} onDelete={handleDelete}
-        onClose={()=>setIsModalOpen(false)} onFileUpload={handleFile} lockedClient={client}/>
+        onClose={()=>setIsModalOpen(false)} onFileUpload={handleFile} lockedClient={client}
+        allClients={allClients} clientDot={clientDot} onAddClientClick={()=>setIsAddClientOpen(true)}/>
     </div>
   );
 }
@@ -419,21 +508,55 @@ export default function ContentCalendarPage() {
   const [isAuth,setIsAuth]       = useState(false);
   const [activeClient,setActiveClient] = useState<string|null>(null);
 
-  useEffect(()=>{ supabase.auth.getSession().then(({data:{session}})=>{ if(!session) router.push("/login"); else setIsAuth(true); }); },[router]);
+  // Dynamic client lists + color maps
+  const [allClients,setAllClients]           = useState<string[]>(BASE_CLIENTS);
+  const [clientDotMap,setClientDotMap]       = useState<Record<string,string>>(BASE_CLIENT_DOT);
+  const [clientTextMap,setClientTextMap]     = useState<Record<string,string>>(BASE_CLIENT_TEXT);
+  const [clientBorderMap,setClientBorderMap] = useState<Record<string,string>>(BASE_CLIENT_BORDER);
+  const [isAddClientOpen,setIsAddClientOpen] = useState(false);
 
-  const [dashOpt,setDashOpt]   = useState("This Month");
-  const [dashStart,setDashStart]= useState(new Date(new Date().getFullYear(),new Date().getMonth(),1));
-  const [dashEnd,setDashEnd]    = useState(new Date(new Date().getFullYear(),new Date().getMonth()+1,0));
-  const [dashPosts,setDashPosts]= useState<any[]>([]);
-  const [dashLoad,setDashLoad]  = useState(true);
-  const [calDate,setCalDate]    = useState(new Date());
-  const [calPosts,setCalPosts]  = useState<any[]>([]);
-  const [calLoad,setCalLoad]    = useState(true);
-  const [isModalOpen,setIsModalOpen]= useState(false);
-  const [isUploading,setIsUploading]= useState(false);
-  const [editId,setEditId]      = useState<string|null>(null);
-  const [formData,setFormData]  = useState({
-    client_name:KNOWN_CLIENTS[0], publish_date:formatDateForInput(new Date()), publish_time:"12:00",
+  const clientDot    = (n:string) => clientDotMap[n]    || "bg-slate-400";
+  const clientText   = (n:string) => clientTextMap[n]   || "text-white";
+  const clientBorder = (n:string) => clientBorderMap[n] || "border-slate-600";
+
+  const loadCustomClients = async () => {
+    const{data}=await supabase.from("custom_clients").select("*").order("created_at",{ascending:true});
+    if(!data) return;
+    const dotMap:Record<string,string>    = {...BASE_CLIENT_DOT};
+    const textMap:Record<string,string>   = {...BASE_CLIENT_TEXT};
+    const borderMap:Record<string,string> = {...BASE_CLIENT_BORDER};
+    data.forEach((r:any)=>{ dotMap[r.name]=r.dot; textMap[r.name]=r.text; borderMap[r.name]=r.border; });
+    const customNames = data.map((r:any)=>r.name).filter((n:string)=>!BASE_CLIENTS.includes(n));
+    setAllClients([...BASE_CLIENTS,...customNames]);
+    setClientDotMap(dotMap);
+    setClientTextMap(textMap);
+    setClientBorderMap(borderMap);
+  };
+
+  const handleAddClient = async(name:string,colorIdx:number)=>{
+    const color=COLOR_OPTIONS[colorIdx];
+    await supabase.from("custom_clients").upsert([{name,dot:color.dot,text:color.text,border:color.border}],{onConflict:"name"});
+    setIsAddClientOpen(false);
+    await loadCustomClients();
+    setRt(p=>p+1);
+  };
+
+  useEffect(()=>{ supabase.auth.getSession().then(({data:{session}})=>{ if(!session) router.push("/login"); else setIsAuth(true); }); },[router]);
+  useEffect(()=>{ loadCustomClients(); },[]);
+
+  const [dashOpt,setDashOpt]    = useState("This Month");
+  const [dashStart,setDashStart] = useState(new Date(new Date().getFullYear(),new Date().getMonth(),1));
+  const [dashEnd,setDashEnd]     = useState(new Date(new Date().getFullYear(),new Date().getMonth()+1,0));
+  const [dashPosts,setDashPosts] = useState<any[]>([]);
+  const [dashLoad,setDashLoad]   = useState(true);
+  const [calDate,setCalDate]     = useState(new Date());
+  const [calPosts,setCalPosts]   = useState<any[]>([]);
+  const [calLoad,setCalLoad]     = useState(true);
+  const [isModalOpen,setIsModalOpen]   = useState(false);
+  const [isUploading,setIsUploading]   = useState(false);
+  const [editId,setEditId]             = useState<string|null>(null);
+  const [formData,setFormData]         = useState({
+    client_name:BASE_CLIENTS[0], publish_date:formatDateForInput(new Date()), publish_time:"12:00",
     platforms:[] as string[], content_type:"Single Image", status:"Copies Written",
     copywriter:ASSIGNEES[0], designer:ASSIGNEES[0], publisher:ASSIGNEES[0],
     copies_needed:1, designs_needed:1, copy_text:"", internal_notes:"", media_urls:[] as string[],
@@ -474,7 +597,7 @@ export default function ContentCalendarPage() {
   const gridDays=Array.from({length:42},(_,i)=>{ const n=i-firstDay+1; return(n>0&&n<=dim)?new Date(year,month,n):null; });
 
   const openNew=(date:Date=new Date())=>{ setEditId(null); setFormData({
-    client_name:KNOWN_CLIENTS[0], publish_date:formatDateForInput(date), publish_time:"12:00",
+    client_name:allClients[0]||BASE_CLIENTS[0], publish_date:formatDateForInput(date), publish_time:"12:00",
     platforms:[], content_type:"Single Image", status:"Copies Written",
     copywriter:ASSIGNEES[0], designer:ASSIGNEES[0], publisher:ASSIGNEES[0],
     copies_needed:1, designs_needed:1, copy_text:"", internal_notes:"", media_urls:[],
@@ -520,7 +643,16 @@ export default function ContentCalendarPage() {
 
   return (
     <>
-      {activeClient && <ClientCalendarOverlay client={activeClient} onClose={()=>setActiveClient(null)} onRefresh={()=>setRt(p=>p+1)}/>}
+      <AddClientModal isOpen={isAddClientOpen} onClose={()=>setIsAddClientOpen(false)} onAdd={handleAddClient}/>
+
+      {activeClient && (
+        <ClientCalendarOverlay
+          client={activeClient} onClose={()=>setActiveClient(null)}
+          onRefresh={()=>{ loadCustomClients(); setRt(p=>p+1); }}
+          clientDot={clientDot} clientText={clientText} clientBorder={clientBorder}
+          allClients={allClients} onAddClient={handleAddClient}
+        />
+      )}
 
       <div className="min-h-screen bg-[#0d1117]">
 
@@ -541,6 +673,10 @@ export default function ContentCalendarPage() {
                 className="cursor-pointer px-3 py-2 text-white/35 font-bold hover:text-white transition-all text-sm">
                 Log Out
               </button>
+              <button onClick={()=>setIsAddClientOpen(true)}
+                className="cursor-pointer px-3 py-2 text-white/50 font-bold bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-sm hidden sm:block">
+                + Client
+              </button>
               <button onClick={()=>openNew()}
                 className="cursor-pointer px-4 py-2 bg-white text-[#0d1117] font-black rounded-xl hover:bg-slate-100 transition-all active:scale-95 text-sm shadow-lg">
                 + New Brief
@@ -554,8 +690,6 @@ export default function ContentCalendarPage() {
           {/* ══ DASHBOARD ══ */}
           {activeTab==="Dashboard" && (
             <div className="space-y-5">
-
-              {/* Date bar */}
               <div className="flex items-center gap-3 bg-[#111827] border border-white/8 rounded-xl p-3 flex-wrap">
                 <span className="text-[10px] font-black text-white/25 uppercase tracking-widest">Date Range</span>
                 <select value={dashOpt} onChange={changeDateOpt}
@@ -581,7 +715,6 @@ export default function ContentCalendarPage() {
                 <div className="p-20 text-center font-bold text-white/20 animate-pulse">Loading metrics...</div>
               ) : (
                 <>
-                  {/* KPI */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                     {STATUSES.map(status=>{ const ss=getStatusStyle(status); const cnt=dashPosts.filter(p=>p.status===status).length; return (
                       <div key={status} className={`p-4 rounded-xl border-l-4 ${ss.card}`}>
@@ -593,8 +726,6 @@ export default function ContentCalendarPage() {
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-
-                    {/* Workload */}
                     <div className="bg-[#111827] rounded-xl border border-white/8 overflow-hidden">
                       <div className="px-4 py-3 border-b border-white/8">
                         <span className="text-[10px] font-black uppercase tracking-widest text-white/35">Agent Workload Pipeline</span>
@@ -629,11 +760,16 @@ export default function ContentCalendarPage() {
                       </div>
                     </div>
 
-                    {/* Client Metrics */}
                     <div className="bg-[#111827] rounded-xl border border-white/8 overflow-hidden">
                       <div className="px-4 py-3 border-b border-white/8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                         <span className="text-[10px] font-black uppercase tracking-widest text-white/35">Client Metrics</span>
-                        <span className="text-[9px] text-white/20 font-bold">Click a client → open their calendar</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[9px] text-white/20 font-bold">Click a client → open their calendar</span>
+                          <button onClick={()=>setIsAddClientOpen(true)}
+                            className="cursor-pointer text-[9px] font-black text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-2 py-1 rounded-lg transition-all">
+                            + Add Client
+                          </button>
+                        </div>
                       </div>
                       <div className="overflow-y-auto max-h-[280px]">
                         <div className="overflow-x-auto">
@@ -656,8 +792,8 @@ export default function ContentCalendarPage() {
                                     className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group">
                                     <td className="p-3 text-sm font-bold">
                                       <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${CLIENT_DOT[cl]||"bg-slate-400"}`}></span>
-                                        <span className={`${CLIENT_TEXT[cl]||"text-white"} group-hover:brightness-125 transition-all`}>{cl}</span>
+                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${clientDot(cl)}`}></span>
+                                        <span className={`${clientText(cl)} group-hover:brightness-125 transition-all`}>{cl}</span>
                                         <span className="hidden sm:inline opacity-0 group-hover:opacity-100 text-[9px] text-white/25 transition-opacity">→</span>
                                       </div>
                                     </td>
@@ -723,8 +859,8 @@ export default function ContentCalendarPage() {
                               <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
                                 {dp.map(post=>{
                                   const ss=getStatusStyle(post.status);
-                                  const dot=CLIENT_DOT[post.client_name]||"bg-slate-400";
-                                  const ct=CLIENT_TEXT[post.client_name]||"text-white";
+                                  const dot=clientDot(post.client_name);
+                                  const ct=clientText(post.client_name);
                                   return (
                                     <div key={post.id}
                                       title={post.copy_text||"No caption"}
@@ -758,7 +894,6 @@ export default function ContentCalendarPage() {
                 </div>
               </div>
 
-              {/* Legend */}
               <div className="mt-3 flex flex-wrap gap-3 justify-center">
                 {STATUSES.map(st=>{ const ss=getStatusStyle(st); return (
                   <div key={st} className="flex items-center gap-1.5">
@@ -774,7 +909,8 @@ export default function ContentCalendarPage() {
 
       <PostModal isOpen={isModalOpen} editId={editId} formData={formData} setFormData={setFormData}
         isUploading={isUploading} onSave={handleSave} onDelete={handleDelete}
-        onClose={()=>setIsModalOpen(false)} onFileUpload={handleFile}/>
+        onClose={()=>setIsModalOpen(false)} onFileUpload={handleFile}
+        allClients={allClients} clientDot={clientDot} onAddClientClick={()=>setIsAddClientOpen(true)}/>
     </>
   );
 }
